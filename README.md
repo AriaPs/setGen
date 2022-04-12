@@ -1,7 +1,7 @@
 # Data Set Construction for Paper xx
 
 <p align="center">
-<img src="./.readme_files/wine.jpg" alt="Front readme image" width=400>
+<img src=".readme_files/wine.jpg" alt="Front readme image" width=400>
 </p>
 
 ## SetUp
