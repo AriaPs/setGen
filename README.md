@@ -28,7 +28,7 @@ blenderproc vis hdf5 output/0.hdf5
 
 ## Usage
 
-Execute in the BlenderProc main directory:
+Execute in the main directory:
 
 ```bash
 blenderproc run main.py
