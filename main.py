@@ -109,7 +109,7 @@ def sample_pose(obj: bproc.types.MeshObject):
     ))
     obj.set_rotation_euler(np.random.uniform([0, 0, 0], [np.pi * 2, np.pi * 2, np.pi * 2]))
 
-bproc.object.sample_poses_on_surface(interior_opaque_objects + interior_transmissiv_objects, furniture[0], sample_pose, max_tries=100, min_distance=0.05, max_distance=0.3)
+placed_objects = bproc.object.sample_poses_on_surface(interior_opaque_objects + interior_transmissiv_objects, furniture[0], sample_pose, max_tries=100, min_distance=0.05, max_distance=0.3)
 
 
 bproc.object.simulate_physics_and_fix_final_poses(
@@ -127,7 +127,7 @@ bproc.lighting.light_surface([obj for obj in room_objects if obj.get_name() == "
 bproc.camera.set_resolution(512, 512)
 
 # Init bvh tree containing all mesh objects
-bvh_tree = bproc.object.create_bvh_tree_multi_objects(room_objects)
+bvh_tree = bproc.object.create_bvh_tree_multi_objects(placed_objects)
 poses = 0
 tries = 0
 while tries < 10000 and poses < 3:
