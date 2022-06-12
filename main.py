@@ -5,7 +5,7 @@ import random
 import os
 import glob
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "7"
+os.environ["CUDA_VISIBLE_DEVICES"] = "4"
 
 ####-------------Used Costum Functions------------------####
 
@@ -85,13 +85,16 @@ if len(placed_objects) ==0 :
     raise Exception("Could not place any object on furniture: ", random_path_fun)
 
 # Set classification labels --> 0 opaque , 1 transmissiv
-furniture[0].set_cp("category_id", 0)
-furniture[0].enable_rigidbody(active=False, collision_shape="MESH")
+for obj in furniture:
+    obj.set_cp("category_id", 0)
+    obj.set_cp("object", 1)
+    obj.enable_rigidbody(active=False, collision_shape="MESH")
 
 ## Create a random procedural texture
 #texture = bproc.material.create_procedural_texture("WOOD")    
 for obj in room_objects:
     obj.set_cp("category_id", 0)
+    obj.set_cp("object", 0)
     obj.enable_rigidbody(active=False, collision_shape="MESH")
     ## Displace the vertices of the object based on that random texture
     #obj.add_displace_modifier(
@@ -104,6 +107,7 @@ mat_path = random.choice(glob.glob(os.path.join(args.transparent_shader_path ,"*
 materials = bproc.material.convert_to_materials(bproc.loader.load_blend(mat_path, data_blocks='materials')) 
 for inObjOpaq in placed_objects:
     inObjOpaq.set_cp("category_id", 0)
+    inObjOpaq.set_cp("object", 1)
     inObjOpaq.enable_rigidbody(active=True, collision_shape="CONVEX_HULL")
     if inObjOpaq.has_materials():
         # In 50% of all cases
@@ -161,7 +165,26 @@ bproc.renderer.set_light_bounces(max_bounces=200, diffuse_bounces=200, glossy_bo
 data = bproc.renderer.render()
 
 # Render segmentation masks (per class and per instance)
-data.update(bproc.renderer.render_segmap(map_by=["class"]))
+trans_map = bproc.renderer.render_segmap(map_by=["class"])
+data.update(trans_map)
+
+
+for inObjOpaq in placed_objects:
+    inObjOpaq.set_cp("category_id", 1)
+
+
+for obj in room_objects:
+    obj.set_cp("category_id", 0)
+
+for obj in furniture:
+    obj.set_cp("category_id", 1)
+
+
+d = bproc.renderer.render_segmap(map_by=["class"])
+s = bproc.renderer.render_segmap(map_by=["instance"])
+
+s['instance_segmaps'] = d['class_segmaps']
+data.update(s)
 
 
 # write the data to a .hdf5 container
