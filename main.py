@@ -49,9 +49,6 @@ paths = get_blends_paths(args.furniture_dir)
 random_path_fun = random.choice(paths)
 furniture = bproc.loader.load_blend(random_path_fun)
 
-#print(random_path_fun, " has :")
-#print(furniture[0].get_bound_box())
-
 # Construct random room and fill with interior_objects
 room_objects = bproc.constructor.construct_random_room(used_floor_area=16, interior_objects=[],
                                                   materials=materials, amount_of_extrusions=0)
@@ -87,30 +84,20 @@ if len(placed_objects) ==0 :
 # Set classification labels --> 0 opaque , 1 transmissiv
 for obj in furniture:
     obj.set_cp("category_id", 0)
-    obj.set_cp("object", 1)
     obj.enable_rigidbody(active=False, collision_shape="MESH")
 
-## Create a random procedural texture
-#texture = bproc.material.create_procedural_texture("WOOD")    
+## Create a random procedural texture 
 for obj in room_objects:
     obj.set_cp("category_id", 0)
-    obj.set_cp("object", 0)
     obj.enable_rigidbody(active=False, collision_shape="MESH")
-    ## Displace the vertices of the object based on that random texture
-    #obj.add_displace_modifier(
-    #    texture=texture,
-    #    strength=random.gauss(0, 0.25),
-    #    subdiv_level=random.randint(1, 3),
-    #)
 
 mat_path = random.choice(glob.glob(os.path.join(args.transparent_shader_path ,"*.blend")))
 materials = bproc.material.convert_to_materials(bproc.loader.load_blend(mat_path, data_blocks='materials')) 
 for inObjOpaq in placed_objects:
     inObjOpaq.set_cp("category_id", 0)
-    inObjOpaq.set_cp("object", 1)
     inObjOpaq.enable_rigidbody(active=True, collision_shape="CONVEX_HULL")
     if inObjOpaq.has_materials():
-        # In 50% of all cases
+        # In 75% of all cases
         if np.random.uniform(0, 1) <= 0.75:
             inObjOpaq.set_cp("category_id", 1)
             material = random.choice(materials)
@@ -124,7 +111,33 @@ bproc.object.simulate_physics_and_fix_final_poses(
     check_object_interval=1
 )
 
-####-------------Sampling n poses----------------####
+# poses_dict needs to be converted as Vector object is not serializable
+# One Object in dict looks like this:
+#  {'obj_key': {'location': Vector(x, y, z), 'rotation': Vector(x, y, z)}
+poses_dict = bproc.python.object.PhysicsSimulation._PhysicsSimulation.get_pose()
+
+# After convertion one Object in dict looks like this:
+#  {'obj_key': {'location': (x, y, z), 'rotation': (x, y, z)}
+converted_dict = {}
+
+for obj in poses_dict:
+    pos = poses_dict[obj]
+    converted_pos = {}
+    for keys in pos:
+        converted_pos.update({keys:pos[keys].to_tuple()})
+    
+    converted_dict.update({obj:converted_pos})
+
+
+# TODO: Check why it does not find the output_path
+#output_path = args.output_dir + '/poses.npy'
+output_path = 'poses.npy'
+np.save(output_path , converted_dict)
+
+new_dict = np.load(output_path , allow_pickle='TRUE')
+
+
+####-------------Sampling n camera poses----------------####
 
 # Bring light into the room
 bproc.lighting.light_surface([obj for obj in room_objects if obj.get_name() == "Ceiling"], emission_strength=4.0, emission_color=[1,1,1,1])
