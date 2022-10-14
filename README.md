@@ -1,4 +1,4 @@
-# Data Set Construction for Paper xx
+# Data Set Construction for Paper
 
 <p align="center">
 <img src="readme_files/example.png" alt="Front readme image" width=400>
