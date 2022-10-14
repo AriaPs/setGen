@@ -4,6 +4,7 @@ import numpy as np
 import random
 import os
 import glob
+from pathlib import Path
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "4"
 
@@ -128,14 +129,9 @@ for obj in poses_dict:
     
     converted_dict.update({obj:converted_pos})
 
-
-# TODO: Check why it does not find the output_path
-#output_path = args.output_dir + '/poses.npy'
-output_path = 'poses.npy'
+os.makedirs(args.output_dir, exist_ok=True)
+output_path = Path(args.output_dir + '/poses.npy')
 np.save(output_path , converted_dict)
-
-new_dict = np.load(output_path , allow_pickle='TRUE')
-
 
 ####-------------Sampling n camera poses----------------####
 
